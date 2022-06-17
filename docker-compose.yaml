@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis
+    restart: always
+
+  servis_db:
+    image: postgres
+    container_name: servis_db
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_DB=kanalservis_db
+
+  app:
+    restart: always
+    build:
+      context: ./maindir
+    command: bash -c "python ./app/manage.py migrate && python ./app/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - servis_db
+
+  celery:
+    build: ./maindir
+    command: bash -c "cd app/ && celery -A app worker -l info"
+    depends_on:
+      - redis
+    environment:
+      - TELEGRAM_API_KEY=5478578538:AAFmpn-tP2G5pkC_wG-WBPqTuF-yB03325E
+      - TELEGRAM_USER_ID=743338178
+
+  celery-beat:
+    build: ./maindir
+    command: bash -c "cd app/ && celery -A app beat -l info"
+    depends_on:
+      - redis

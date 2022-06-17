@@ -1,0 +1,92 @@
+{% load static %}
+{% load lists_operators %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KanalServis Statistic</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+	<link type="text/css" href="{% static 'main/css/style.css' %}" rel="stylesheet">
+</head>
+<body>
+    <div class="col-12 row">
+        <div class="m-5 col">
+            <script>
+            window.onload = function() {
+
+            var dataPoints = [];
+
+            var options =  {
+                animationEnabled: true,
+                theme: "light2",
+                title: {
+                    text: "Дневные продажи"
+                },
+                axisX: {
+                    valueFormatString: "DD MMM YYYY",
+                },
+                axisY: {
+                    title: "РУБ",
+                    titleFontSize: 24
+                },
+                data: [{
+                    type: "spline",
+                    yValueFormatString: "₽#,###.##",
+                    dataPoints: dataPoints
+                }]
+            };
+
+            function addData(data) {
+                for (var i = 0; i < data.length; i++) {
+                    dataPoints.push({
+                        x: new Date(data[i].date),
+                        y: data[i].units
+                    });
+                }
+                $("#chartContainer").CanvasJSChart(options);
+
+            }
+            <!-- График делает запрос к серверу для получения данных -->
+            $.getJSON("http://127.0.0.1:8000/get_data", addData);
+
+            }
+            </script>
+            <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+        </div>
+        <div class="col m-5">
+            <div class="row">
+                <h1>Всего: {{orders|sum_rub_price:'rub_price'}} ₽</h1>
+            </div>
+            <div class="row">
+                <table border="1" class="table table-success table-striped">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Заказ</th>
+                            <th>Цена, $</th>
+                            <th>Стоимость, ₽</th>
+                            <th>Дата доставки</th>
+                        </tr>
+                    </thead>
+                    {%for order in orders|dictsort:"pk" %}
+                    <tbody>
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{order.article}}</td>
+                            <td>{{order.price}}</td>
+                            <td>{{order.rub_price}}</td>
+                            <td>{{order.delivery_date}}</td>
+                        </tr>
+                    </tbody>
+                    {%endfor%}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+    <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+</body>
+</html>
