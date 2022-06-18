@@ -1,5 +1,5 @@
 Ссылка на Google Sheets: https://docs.google.com/spreadsheets/d/12DKhaTqeFNSs-17tY89D3johfTKXtkXnulbhltB3_Lc/edit#gid=0
-Срикпт обновления БД из Google Sheets /maindir/script.py, google api credentials /maindir/kanalservis_sa.json
+Скрипт обновления БД из Google Sheets /maindir/script.py, google api credentials /maindir/kanalservis_sa.json
 
 Инструкция по запуску:
 
