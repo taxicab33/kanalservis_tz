@@ -1,6 +1,6 @@
 1. Ссылка на Google Sheets: https://docs.google.com/spreadsheets/d/12DKhaTqeFNSs-17tY89D3johfTKXtkXnulbhltB3_Lc/edit#gid=0
-2. Скрипт обновления БД из Google Sheets /maindir/script.py
-3. Google API credentials /maindir/kanalservis_sa.json
+2. Скрипт обновления БД из Google Sheets /maindir/app/script.py
+3. Google API credentials /maindir/app/kanalservis_sa.json
 
 Инструкция по запуску:
 
