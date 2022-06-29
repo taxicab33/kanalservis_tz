@@ -16,7 +16,7 @@ django.setup()
 
 # Данные для авторизации и получения доступа к Google Sheets API
 CREDENTIALS_FILE = 'kanalservis_sa.json'
-spreadsheet_id = '12DKhaTqeFNSs-17tY89D3johfTKXtkXnulbhltB3_Lc'
+spreadsheet_id = os.getenv('SPREADSHEET_ID', '12DKhaTqeFNSs-17tY89D3johfTKXtkXnulbhltB3_Lc')
 
 
 def auth_in_api():
@@ -60,14 +60,15 @@ def sheet_orders_list(values):
     sheet_orders = []
     for i in range(1, len(values)):
         item = values[i]
-        # Приводим дату каждой строки, к рабочему формату Django
-        delivery_date = datetime.strptime(str(item[3]).strip(), '%d.%m.%Y').date()
-        # Определяем цену в рублях
-        rub_price = round(float(item[2].replace(',', '.')) * usd_rub_price, 2)
+        if item:
+            # Приводим дату каждой строки, к рабочему формату Django
+            delivery_date = datetime.strptime(str(item[3]).strip(), '%d.%m.%Y').date()
+            # Определяем цену в рублях
+            rub_price = round(float(item[2].replace(',', '.')) * usd_rub_price, 2)
 
-        order = Order(article=item[1], price=float(item[2]), rub_price=rub_price,
-                      delivery_date=delivery_date)
-        sheet_orders.append(order)
+            order = Order(article=item[1], price=float(item[2]), rub_price=rub_price,
+                          delivery_date=delivery_date)
+            sheet_orders.append(order)
     return sheet_orders
 
 
@@ -96,27 +97,30 @@ def update_orders_info():
     sheet_orders = sheet_orders_list(get_google_sheet_data())
     # Список заказов в БД
     bd_orders = Order.objects.all()
-    # Список номеров заказов в гугл таблице
-    sheet_orders_articles = [sheet_order.article for sheet_order in sheet_orders]
+    # Список номеров заказов в БД
+    bd_orders_articles = [bd_order.article for bd_order in bd_orders]
+    # Словарь заказов из гугл таблицы, ключ(номер заказа): значение(экземпляр заказа)
+    sheet_orders_dict = {sheet_order.article: sheet_order for sheet_order in sheet_orders}
+    # Список номеров заказов в Google Sheet, чтобы не обращася постоянно к методу .keys() словаря выше
+    sheet_orders_articles = sheet_orders_dict.keys()
     # Списки для работы с заказами гугл таблицы
     orders_to_create, orders_to_update, orders_to_delete_articles = [], [], []
     # Передаем список заказов на проверку просроченных и отправку сообщения в ТГ
     check_overdue_orders(sheet_orders)
-
+    # Если таблица в БД не пуста
     if bd_orders:
         for bd_order in bd_orders:
-            for sheet_order in sheet_orders:
-                # получаем записи для обновления
-                if not sheet_order.__eq__(bd_order) and sheet_order.article == bd_order.article:
-                    orders_to_update.append(bd_orders)
-                    # прерываем цикл при совпадении
-                    break
-            # получаем записи для удаления из БД
-            if bd_order.article not in sheet_orders_articles:
+            # получаем записи для обновления
+            if bd_order.article in sheet_orders_articles:
+                sheet_order = sheet_orders_dict.get(bd_order.article)
+                if not bd_order.__eq__(sheet_order) and bd_order.article == sheet_order.article:
+                    orders_to_update.append(sheet_order)
+            else:
+                # получаем записи для удаления из БД
                 orders_to_delete_articles.append(bd_order.article)
-        # получаем записи для добавления, если таблица в БД не пуста
+        # получаем записи для добавления
         for item in sheet_orders:
-            if item.article not in [bd_order.article for bd_order in bd_orders]:
+            if item.article not in bd_orders_articles:
                 orders_to_create.append(item)
     else:
         # получаем записи для добавления, если таблица в БД пуста
@@ -125,7 +129,7 @@ def update_orders_info():
     if orders_to_create:
         Order.objects.bulk_create(orders_to_create)
     if orders_to_update:
-        Order.objects.bulk_update(sheet_orders, ['price', 'rub_price', 'delivery_date'])
+        Order.objects.bulk_update(orders_to_update, ['price', 'rub_price', 'delivery_date'])
     if orders_to_delete_articles:
         Order.objects.filter(article__in=orders_to_delete_articles).delete()
 

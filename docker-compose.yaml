@@ -29,9 +29,8 @@ services:
     command: bash -c "cd app/ && celery -A app worker -l info"
     depends_on:
       - redis
-    environment:
-      - TELEGRAM_API_KEY=5478578538:AAFmpn-tP2G5pkC_wG-WBPqTuF-yB03325E
-      - TELEGRAM_USER_ID=743338178
+    env_file:
+      - .env
 
   celery-beat:
     build: ./maindir
