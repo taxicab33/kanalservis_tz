@@ -7,7 +7,10 @@
 1) Скачать файл с GitHub и разархивировать в удобную для вас директорию
 2) Из этой директории, через командную строку, перейти в kanalservis_tz командой cd kanalservis_tz
 3) Установить приложение Docker и настроить соответвующе под вашу операционную систему (на Winows включить Hyper-V, отключить wslEngineEnabled. На Linux наоборот). Запустить Docker
-4) В файле docker-compose изменить переменную окружения TELEGRAM_USER_ID контейнера celery на свой telegram_id
+4) В директории kanalservis_tz создать файл .env и вписать туда данные для переменных окружения:
+   TELEGRAM_API_KEY
+   TELEGRAM_USER_ID
+   SPREADSHEET_ID
    1) Узнать свой telegram_id можно написав боту @getmyid_bot
 5) Перейти обратно в директорию kanalservis_tz и прописать команду docker-compose up --build
 6) Открыть браузер и перейти по адресу 127.0.0.1:8000
