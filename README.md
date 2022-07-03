@@ -10,7 +10,7 @@
 4) В директории kanalservis_tz создать файл .env и вписать туда данные для переменных окружения:
    - TELEGRAM_API_KEY
    - TELEGRAM_USER_ID
-   - SPREADSHEET_ID
+   - SPREADSHEET_ID=12DKhaTqeFNSs-17tY89D3johfTKXtkXnulbhltB3_Lc
    1) Узнать свой telegram_id можно написав боту @getmyid_bot
 5) Перейти обратно в директорию kanalservis_tz и прописать команду docker-compose up --build
 6) Открыть браузер и перейти по адресу 127.0.0.1:8000
